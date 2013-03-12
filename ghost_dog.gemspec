@@ -1,11 +1,11 @@
 # coding: utf-8
 lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require 'ghost/dog/version'
+require 'ghost_dog/version'
 
 Gem::Specification.new do |spec|
-  spec.name          = "ghost-dog"
-  spec.version       = Ghost::Dog::VERSION
+  spec.name          = "ghost_dog"
+  spec.version       = GhostDog::VERSION
   spec.authors       = ["Andrew Warner"]
   spec.email         = ["wwarner.andrew@gmail.com"]
   spec.description   = %q{TODO: Write a gem description}
@@ -20,4 +20,6 @@ Gem::Specification.new do |spec|
 
   spec.add_development_dependency "bundler", "~> 1.3"
   spec.add_development_dependency "rake"
+  spec.add_development_dependency "rspec"
+  spec.add_development_dependency "pry"
 end
