@@ -5,7 +5,7 @@ module GhostDog
     base.extend(ClassMethods)
     base.send(:include, InstanceMethods)
 
-    def base._ghost_methods
+    def base._ghost_method_definitions
       @_ghost_methods ||= []
     end
   end
@@ -40,7 +40,7 @@ module GhostDog
     private
 
     def _ghost_methods
-      _klass_where_ghost_method_definitions_are._ghost_methods
+      _klass_where_ghost_method_definitions_are._ghost_method_definitions
     end
 
     def _klass_where_ghost_method_definitions_are
@@ -69,7 +69,7 @@ module GhostDog
 
   module ClassMethods
     def ghost_method(matcher, &block)
-      _ghost_methods << Responder.new(matcher, &block)
+      _ghost_method_definitions << Responder.new(matcher, &block)
     end
   end
 end

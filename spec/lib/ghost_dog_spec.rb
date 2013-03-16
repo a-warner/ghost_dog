@@ -66,11 +66,25 @@ describe GhostDog do
           "SuperKlass"
         end
       end
+
+      include GhostDog
+
+      ghost_method /^instance_methods_say_(.+)$/ do |what_to_say|
+        "#{greeting} #{what_to_say}"
+      end
+
+      def greeting
+        "Super greeting"
+      end
     end
 
     class SubKlass < SuperKlass
       def self.overridable_method
         "SubKlass"
+      end
+
+      def greeting
+        "Sub greeting"
       end
     end
 
@@ -79,11 +93,21 @@ describe GhostDog do
     context SuperKlass do
       let(:obj) { SuperKlass }
       its(:call_an_awesome_overridable_method) { should == 'awesome SuperKlass' }
+
+      context 'instance' do
+        let(:obj) { SuperKlass.new }
+        its(:instance_methods_say_salutations) { should == "Super greeting salutations" }
+      end
     end
 
     context SubKlass do
       let(:obj) { SubKlass }
       its(:call_an_awesome_overridable_method) { should == 'awesome SubKlass' }
+
+      context 'instance' do
+        let(:obj) { SubKlass.new }
+        its(:instance_methods_say_salutations) { should == "Sub greeting salutations" }
+      end
     end
   end
 end
