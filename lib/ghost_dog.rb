@@ -24,7 +24,7 @@ module GhostDog
       matches = matcher.match(method).to_a.drop(1)
       respond_with = self.responding_block
 
-      receiver.class.class_eval do
+      receiver.class_eval do
         define_method(method) do |*args, &block|
           instance_exec(*(matches + args).flatten, &respond_with)
         end
@@ -40,7 +40,15 @@ module GhostDog
     private
 
     def _ghost_methods
-      self.class._ghost_methods
+      _klass_where_ghost_method_definitions_are._ghost_methods
+    end
+
+    def _klass_where_ghost_method_definitions_are
+      if self.class == Class
+        self.singleton_class
+      else
+        self.class
+      end
     end
 
     def responding_ghost_method(method)
@@ -51,7 +59,7 @@ module GhostDog
 
     def method_missing(method, *args, &block)
       if matcher = responding_ghost_method(method.to_s)
-        matcher.call(self, method.to_s)
+        matcher.call(_klass_where_ghost_method_definitions_are, method.to_s)
         send(method, *args, &block)
       else
         super
