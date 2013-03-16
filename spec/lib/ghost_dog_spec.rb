@@ -110,4 +110,92 @@ describe GhostDog do
       end
     end
   end
+
+  context 'complex matchers' do
+    class ComplexExample
+      include GhostDog
+
+      def names
+        ['ishmael', 'dave']
+      end
+
+      ghost_method do
+        matcher do |method_name|
+          if match = method_name.match(/^call_me_(#{names.join('|')})$/)
+            match.to_a.drop(1)
+          end
+        end
+
+        responder do |name|
+          "what's going on #{name}?"
+        end
+      end
+    end
+
+    subject { obj }
+
+    let(:obj) { ComplexExample.new }
+
+    it { should_not respond_to(:call_me_john) }
+    ['ishmael', 'dave'].each do |name|
+      it { should respond_to(:"call_me_#{name}") }
+      its(:"call_me_#{name}") { should == "what's going on #{name}?" }
+    end
+
+    context 'superclass and subclass' do
+      class SuperClass
+        include GhostDog
+
+        ghost_method do
+          matcher do |method_name|
+            if match = method_name.match(/^(#{names.join('|')})$/)
+              match.to_a.drop(1)
+            end
+          end
+
+          responder do |name|
+            "hello mr #{name}"
+          end
+        end
+      end
+
+      class A < SuperClass
+        def names; ['james', 'john']; end
+      end
+
+      class B < SuperClass
+        def names; ['anna', 'margaret']; end
+      end
+
+      subject { obj }
+
+      def self.name_examples_for(*names)
+        names.each do |name|
+          it { should respond_to(name) }
+          its(name) { should == "hello mr #{name}" }
+        end
+      end
+
+      def self.non_responding_examples_for(*names)
+        names.map(&:to_sym).each do |name|
+          it { should_not respond_to(name) }
+          it 'should raise NoMethodError' do
+            expect { send(name) }.to raise_exception NoMethodError
+          end
+        end
+      end
+
+      context A do
+        let(:obj) { A.new }
+        name_examples_for('james', 'john')
+        non_responding_examples_for('anna', 'margaret')
+      end
+
+      context B do
+        let(:obj) { B.new }
+        name_examples_for('anna', 'margaret')
+        non_responding_examples_for('james', 'john')
+      end
+    end
+  end
 end
