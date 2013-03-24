@@ -143,40 +143,44 @@ describe GhostDog do
     end
 
     context 'superclass and subclass' do
-      class SuperClass
-        include GhostDog
+      def self.setup_superclass(super_class)
 
-        ghost_method do
-          matcher do |method_name|
-            if match = method_name.match(/^(#{names.join('|')})$/)
-              match.to_a.drop(1)
+        super_class.class_eval do
+          include GhostDog
+
+          ghost_method do
+            matcher do |method_name|
+              if match = method_name.match(/^(#{names.join('|')})$/)
+                match.to_a.drop(1)
+              end
+            end
+
+            responder do |name|
+              "hello mr #{name}"
             end
           end
+        end
 
-          responder do |name|
-            "hello mr #{name}"
-          end
+      end
+
+      def self.setup_subclasses(sub_class_1, sub_class_2)
+        sub_class_1.class_eval do
+          def names; ['james', 'john']; end
+        end
+
+        sub_class_2.class_eval do
+          def names; ['anna', 'margaret']; end
         end
       end
 
-      class A < SuperClass
-        def names; ['james', 'john']; end
-      end
-
-      class B < SuperClass
-        def names; ['anna', 'margaret']; end
-      end
-
-      subject { obj }
-
-      def self.name_examples_for(*names)
+      def self.name_examples_for(names)
         names.each do |name|
           it { should respond_to(name) }
           its(name) { should == "hello mr #{name}" }
         end
       end
 
-      def self.non_responding_examples_for(*names)
+      def self.non_responding_examples_for(names)
         names.map(&:to_sym).each do |name|
           it { should_not respond_to(name) }
           it 'should raise NoMethodError' do
@@ -185,17 +189,41 @@ describe GhostDog do
         end
       end
 
-      context A do
-        let(:obj) { A.new }
-        name_examples_for('james', 'john')
-        non_responding_examples_for('anna', 'margaret')
+      def self.name_examples(ctx, obj, options)
+        context ctx do
+          let(:obj) { obj }
+          name_examples_for(options.fetch(:responds_to))
+          non_responding_examples_for(options.fetch(:non_responses))
+        end
       end
 
-      context B do
-        let(:obj) { B.new }
-        name_examples_for('anna', 'margaret')
-        non_responding_examples_for('james', 'john')
-      end
+      class SuperClass; end
+      setup_superclass(SuperClass)
+      class SubClassA < SuperClass; end
+      class SubClassB < SuperClass; end
+      setup_subclasses(SubClassA, SubClassB)
+
+      subject { obj }
+
+      name_examples(SubClassA, SubClassA.new,
+                    :responds_to => ['james', 'john'],
+                    :non_responses => ['anna', 'margaret'])
+      name_examples(SubClassB, SubClassB.new,
+                    :responds_to => ['anna', 'margaret'],
+                    :non_responses => ['james', 'john'])
+
+      class SuperEigenClass; end
+      setup_superclass(SuperEigenClass.singleton_class)
+      class SubEigenclassA < SuperEigenClass; end
+      class SubEigenclassB < SuperEigenClass; end
+      setup_subclasses(SubEigenclassA.singleton_class, SubEigenclassB.singleton_class)
+
+      name_examples(SubEigenclassA.singleton_class, SubEigenclassA,
+                    :responds_to => ['james', 'john'],
+                    :non_responses => ['anna', 'margaret'])
+      name_examples(SubEigenclassB.singleton_class, SubEigenclassB,
+                    :responds_to => ['anna', 'margaret'],
+                    :non_responses => ['james', 'john'])
     end
   end
 end

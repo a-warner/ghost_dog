@@ -5,20 +5,6 @@ module GhostDog
   def self.included(base)
     base.extend(ClassMethods)
     base.send(:include, InstanceMethods)
-
-    class << base
-      def _ghost_method_definitions
-        @_ghost_methods ||= []
-      end
-
-      def inherited_with_ghost_dog(child)
-        child.instance_variable_set('@_ghost_methods', _ghost_method_definitions)
-        inherited_without_ghost_dog(child)
-      end
-
-      alias inherited_without_ghost_dog inherited
-      alias inherited inherited_with_ghost_dog
-    end
   end
 
   class Responder
@@ -120,11 +106,33 @@ module GhostDog
         super
       end
     end
+
+    def inherited(child)
+      if singleton_class.respond_to?(:_setup_ghost_dog_inheritance)
+        singleton_class._setup_ghost_dog_inheritance(child.singleton_class)
+      end
+      super
+    end
   end
 
   module ClassMethods
     def ghost_method(matcher = nil, &block)
       _ghost_method_definitions << Responder.from(matcher, block)
+    end
+
+    def _ghost_method_definitions
+      @_ghost_methods ||= []
+    end
+
+    def _setup_ghost_dog_inheritance(child)
+      child.instance_variable_set('@_ghost_methods', _ghost_method_definitions)
+    end
+
+    private
+
+    def inherited(child)
+      _setup_ghost_dog_inheritance(child)
+      super
     end
   end
 end
