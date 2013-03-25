@@ -49,9 +49,8 @@ module GhostDog
 
     def call(instance, klass, method)
       match_result = matches(instance, method)
-      respond_with = self.responding_block
 
-      klass.class_eval do
+      klass.class_exec(responding_block) do |respond_with|
         define_method(method) do |*args, &block|
           instance_exec(*(match_result + args).flatten, &respond_with)
         end
