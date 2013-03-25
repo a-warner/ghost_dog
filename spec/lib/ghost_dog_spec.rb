@@ -226,4 +226,56 @@ describe GhostDog do
                     :non_responses => ['james', 'john'])
     end
   end
+
+  context 'missing method' do
+    class Broken
+      include GhostDog
+
+      ghost_method /\Ahello_(.+)\Z/ do |name|
+        method_that_doesnt_exist(name)
+      end
+
+      ghost_method do
+        matcher do |method_name|
+          nothing_to_see_here(method_name)
+        end
+
+        responder do |something|
+          raise "I shouldn't be called..."
+        end
+      end
+    end
+
+    subject { Broken.new }
+
+    context 'in method definition' do
+      it 'should raise error' do
+        expect { subject.hello_world }.to raise_error NoMethodError
+      end
+    end
+
+    context 'in method matcher' do
+      it 'should raise error' do
+        expect { subject.foo_bar }.to raise_error NoMethodError
+      end
+    end
+  end
+
+  context 'calling ghost method from a ghost method' do
+    class DoubleGhost
+      include GhostDog
+
+      ghost_method /\Ahello_(.+)\Z/ do |name|
+        "hello to you, #{name}"
+      end
+
+      ghost_method /\Afoo_(.+)\Z/ do |after_foo|
+        send(:"hello_#{after_foo}")
+      end
+    end
+
+    subject { DoubleGhost.new }
+
+    its(:foo_bar) { should == "hello to you, bar" }
+  end
 end

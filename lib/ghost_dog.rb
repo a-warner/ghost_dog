@@ -92,9 +92,16 @@ module GhostDog
     end
 
     def responding_ghost_method(method)
+      @_considered_methods ||= []
+      return if @_considered_methods.include?(method)
+
+      @_considered_methods << method
+
       _ghost_methods.detect do |matcher|
         matcher.matches?(self, method)
       end
+    ensure
+      @_considered_methods = []
     end
 
     def method_missing(method, *args, &block)
