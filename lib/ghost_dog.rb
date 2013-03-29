@@ -27,6 +27,7 @@ module GhostDog
         define_method(dsl_method) do |&block|
           instance_variable_set("@#{dsl_method}", block)
         end
+        private dsl_method
       end
 
       def to_responder
@@ -80,7 +81,7 @@ module GhostDog
     private
 
     def _ghost_methods
-      _klass_where_ghost_method_definitions_are._ghost_method_definitions
+      _klass_where_ghost_method_definitions_are.send(:_ghost_method_definitions)
     end
 
     def _klass_where_ghost_method_definitions_are
@@ -114,31 +115,37 @@ module GhostDog
     end
 
     def inherited(child)
-      if singleton_class.respond_to?(:_setup_ghost_dog_inheritance)
-        singleton_class._setup_ghost_dog_inheritance(child.singleton_class)
-      end
+      _setup_ghost_dog_singleton_class_inheritance(child)
       super
+    end
+
+    def _setup_ghost_dog_singleton_class_inheritance(child)
+      if singleton_class.respond_to?(:_setup_ghost_dog_inheritance, :include_private)
+        singleton_class.send(:_setup_ghost_dog_inheritance, child.singleton_class)
+      end
     end
   end
 
   module ClassMethods
+    protected
+
     def ghost_method(matcher = nil, &block)
       _ghost_method_definitions << Responder.from(matcher, block)
     end
+
+    private
 
     def _ghost_method_definitions
       @_ghost_methods ||= []
     end
 
-    def _setup_ghost_dog_inheritance(child)
-      child.instance_variable_set('@_ghost_methods', _ghost_method_definitions)
-    end
-
-    private
-
     def inherited(child)
       _setup_ghost_dog_inheritance(child)
       super
+    end
+
+    def _setup_ghost_dog_inheritance(child)
+      child.instance_variable_set('@_ghost_methods', _ghost_method_definitions)
     end
   end
 end
