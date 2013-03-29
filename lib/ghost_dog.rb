@@ -1,76 +1,11 @@
 require 'ghost_dog/version'
+require 'ghost_dog/responder'
 require 'delegate'
 
 module GhostDog
   def self.included(base)
     base.extend(ClassMethods)
     base.send(:include, InstanceMethods)
-  end
-
-  class Responder
-    class RegexpMatcher < Struct.new(:regexp)
-      def matches(receiver, method_name)
-        if match = regexp.match(method_name)
-          match.to_a.drop(1)
-        end
-      end
-    end
-
-    class ProcMatcher < Struct.new(:block)
-      def matches(receiver, method_name)
-        receiver.instance_exec(method_name, &block)
-      end
-    end
-
-    class DSL
-      [:matcher, :responder].each do |dsl_method|
-        define_method(dsl_method) do |&block|
-          instance_variable_set("@#{dsl_method}", block)
-        end
-        private dsl_method
-      end
-
-      def to_responder
-        raise "Incomplete ghost method - must specify matcher and responding_block" unless [@matcher, @responder].all?
-
-        Responder.new(@matcher, @responder)
-      end
-    end
-
-    attr_reader :matcher, :responding_block
-    def initialize(matcher, responding_block)
-      @matcher = self.class.const_get("#{matcher.class}Matcher").new(matcher)
-      @responding_block = responding_block
-    end
-
-    def matches(receiver, method)
-      matcher.matches(receiver, method)
-    end
-    alias_method :matches?, :matches
-
-    def call(instance, klass, method)
-      match_result = matches(instance, method)
-
-      klass.class_exec(responding_block) do |respond_with|
-        define_method(method) do |*args, &block|
-          instance_exec(*(match_result + args).flatten, &respond_with)
-        end
-      end
-    end
-
-    def self.from(matcher, block)
-      if matcher.nil?
-        from_dsl(block)
-      else
-        new(matcher, block)
-      end
-    end
-
-    def self.from_dsl(block)
-      Responder::DSL.new.tap do |dsl|
-        dsl.instance_eval(&block)
-      end.to_responder
-    end
   end
 
   module InstanceMethods
