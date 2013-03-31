@@ -120,7 +120,7 @@ describe GhostDog do
       end
 
       ghost_method do
-        matcher do |method_name|
+        match_with do |method_name|
           if match = method_name.match(/^call_me_(#{names.join('|')})$/)
             match.to_a.drop(1)
           end
@@ -142,6 +142,44 @@ describe GhostDog do
       its(:"call_me_#{name}") { should == "what's going on #{name}?" }
     end
 
+    context 'custom matcher class' do
+      class CustomMatcher
+        def matches(receiver, method_name)
+          method_name == 'andrew' && method_name
+        end
+      end
+
+      class CustomMatcher2
+        def matches(receiver, method_name)
+          method_name == 'john' && method_name
+        end
+      end
+
+      class CustomMatcherExample
+        include GhostDog
+
+        ghost_method do
+          match_with CustomMatcher.new
+
+          responder do |name|
+            "that's a cool matcher #{name}"
+          end
+        end
+
+        ghost_method CustomMatcher2.new do |name|
+          "more concise, #{name}!"
+        end
+      end
+
+      let(:obj) { CustomMatcherExample.new }
+
+      it { should respond_to(:andrew) }
+      its(:andrew) { should == "that's a cool matcher andrew" }
+      it { should respond_to(:john) }
+      its(:john) { should == "more concise, john!" }
+
+    end
+
     context 'superclass and subclass' do
       def self.setup_superclass(super_class)
 
@@ -149,7 +187,7 @@ describe GhostDog do
           include GhostDog
 
           ghost_method do
-            matcher do |method_name|
+            match_with do |method_name|
               if match = method_name.match(/^(#{names.join('|')})$/)
                 match.to_a.drop(1)
               end
@@ -236,7 +274,7 @@ describe GhostDog do
       end
 
       ghost_method do
-        matcher do |method_name|
+        match_with do |method_name|
           nothing_to_see_here(method_name)
         end
 
