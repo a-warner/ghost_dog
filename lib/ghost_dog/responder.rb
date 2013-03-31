@@ -31,7 +31,7 @@ module GhostDog
       else
         using_dsl do
           match_with(matcher)
-          responder(&block)
+          respond_with(&block)
         end
       end
     end

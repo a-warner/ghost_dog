@@ -126,7 +126,7 @@ describe GhostDog do
           end
         end
 
-        responder do |name|
+        respond_with do |name|
           "what's going on #{name}?"
         end
       end
@@ -161,7 +161,7 @@ describe GhostDog do
         ghost_method do
           match_with CustomMatcher.new
 
-          responder do |name|
+          respond_with do |name|
             "that's a cool matcher #{name}"
           end
         end
@@ -193,7 +193,7 @@ describe GhostDog do
               end
             end
 
-            responder do |name|
+            respond_with do |name|
               "hello mr #{name}"
             end
           end
@@ -278,7 +278,7 @@ describe GhostDog do
           nothing_to_see_here(method_name)
         end
 
-        responder do |something|
+        respond_with do |something|
           raise "I shouldn't be called..."
         end
       end

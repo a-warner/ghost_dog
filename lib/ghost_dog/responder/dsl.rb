@@ -9,7 +9,7 @@ module GhostDog
 
       private
 
-      def responder(&block)
+      def respond_with(&block)
         @responder = block
       end
 
