@@ -1,4 +1,4 @@
-# Ghost::Dog
+# Ghost Dog
 
 Making method_missing easier to deal with since 2013...
 
