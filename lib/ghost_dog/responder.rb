@@ -22,13 +22,13 @@ module GhostDog
       if create_method?
         klass.class_exec(responding_block) do |respond_with|
           define_method(method) do |*args, &block|
-            instance_exec(*(match_result + args).flatten, &respond_with)
+            instance_exec(*(match_result + args).flatten(1), &respond_with)
           end
         end
 
         instance.send(method, *passed_args, &passed_block)
       else
-        instance.instance_exec(*(match_result + passed_args).flatten, &responding_block)
+        instance.instance_exec(*(match_result + passed_args).flatten(1), &responding_block)
       end
     end
 
