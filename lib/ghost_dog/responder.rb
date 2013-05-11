@@ -17,18 +17,18 @@ module GhostDog
     alias_method :matches?, :matches
 
     def call(instance, klass, method, passed_args, passed_block)
-      match_result = [matches(instance, method)].flatten(1)
+      match_result = Array[matches(instance, method)].flatten(1)
 
       if create_method?
         klass.class_exec(responding_block) do |respond_with|
           define_method(method) do |*args, &block|
-            instance_exec(*(match_result + args).flatten(1), &respond_with)
+            instance_exec(*(match_result + args), &respond_with)
           end
         end
 
         instance.send(method, *passed_args, &passed_block)
       else
-        instance.instance_exec(*(match_result + passed_args).flatten(1), &responding_block)
+        instance.instance_exec(*(match_result + passed_args), &responding_block)
       end
     end
 
