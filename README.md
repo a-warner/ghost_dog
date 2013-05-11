@@ -1,5 +1,7 @@
 # Ghost Dog
 
+![](https://travis-ci.org/a-warner/ghost_dog.png)
+
 Making method_missing easier to deal with since 2013...
 
 ## Installation
