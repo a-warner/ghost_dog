@@ -42,8 +42,7 @@ module GhostDog
 
     def method_missing(method, *args, &block)
       if matcher = responding_ghost_method(method.to_s)
-        matcher.call(self, _klass_where_ghost_method_definitions_are, method.to_s)
-        send(method, *args, &block)
+        matcher.call(self, _klass_where_ghost_method_definitions_are, method.to_s, args, block)
       else
         super
       end
@@ -64,8 +63,8 @@ module GhostDog
   module ClassMethods
     protected
 
-    def ghost_method(matcher = nil, &block)
-      _ghost_method_definitions << Responder.from(matcher, block)
+    def ghost_method(matcher = nil, options = {}, &block)
+      _ghost_method_definitions << Responder.from(matcher, options, block)
     end
 
     private

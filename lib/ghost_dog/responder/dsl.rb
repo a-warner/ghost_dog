@@ -1,13 +1,21 @@
 module GhostDog
   class Responder
     class DSL
+      def initialize
+        @options = { :create_method => true }
+      end
+
       def to_responder
         raise "Incomplete ghost method - must specify matcher and responding_block" unless [@matcher, @responder].all?
 
-        Responder.new(@matcher, @responder)
+        Responder.new(@matcher, @options, @responder)
       end
 
       private
+
+      def create_method(value)
+        @options[:create_method] = value
+      end
 
       def respond_with(&block)
         @responder = block

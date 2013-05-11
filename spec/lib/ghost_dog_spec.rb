@@ -316,4 +316,56 @@ describe GhostDog do
 
     its(:foo_bar) { should == "hello to you, bar" }
   end
+
+  context "doesn't define method" do
+    class DontDefineMethod; end
+
+    def self.dont_create_method_examples_for(klass, &block)
+      klass.class_eval do
+        include GhostDog
+
+        ghost_method /\Aforest_whitaker_is_(\w+)\z/, :create_method => false do |what_he_is|
+          "#{prefix} forest is #{what_he_is}?"
+        end
+
+        ghost_method do
+          create_method false
+
+          match_with do |method_name|
+            method_name.to_s =~ /\A(#{name})_is_a_fan_of_forest\z/ && $1
+          end
+
+          respond_with { |name| "#{name} sure is!" }
+        end
+
+        def name
+          'andrew'
+        end
+
+        def prefix
+          "did you know that"
+        end
+      end
+
+      context klass do
+        subject { block.call }
+
+        before do
+          subject.forest_whitaker_is_awesome
+          subject.andrew_is_a_fan_of_forest
+        end
+
+        its(:forest_whitaker_is_awesome) { should == "did you know that forest is awesome?" }
+        its(:public_methods) { should_not include :forest_whitaker_is_awesome }
+        it { should respond_to(:forest_whitaker_is_awesome) }
+
+        its(:andrew_is_a_fan_of_forest) { should == "andrew sure is!" }
+        its(:public_methods) { should_not include :andrew_is_a_fan_of_forest }
+        it { should respond_to(:andrew_is_a_fan_of_forest) }
+      end
+    end
+
+    dont_create_method_examples_for(DontDefineMethod) { DontDefineMethod.new }
+    dont_create_method_examples_for(DontDefineMethod.singleton_class) { DontDefineMethod }
+  end
 end
