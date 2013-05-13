@@ -109,7 +109,7 @@ class MyModel < ActiveRecord::Base
           raise ArgumentError, "Wrong number of arguments (#{args.length} for #{columns_to_find_by.length})"
         end
 
-        where(Hash[columns_to_find_by.zip(args)])
+        where(Hash[columns_to_find_by.zip(args)]).first
       end
     end
   end
