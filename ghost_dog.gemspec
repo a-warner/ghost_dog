@@ -8,8 +8,8 @@ Gem::Specification.new do |spec|
   spec.version       = GhostDog::VERSION
   spec.authors       = ["Andrew Warner"]
   spec.email         = ["wwarner.andrew@gmail.com"]
-  spec.description   = %q{TODO: Write a gem description}
-  spec.summary       = %q{TODO: Write a gem summary}
+  spec.description   = %q{Making method_missing easier since 2013}
+  spec.summary       = %q{Making method_missing easier since 2013}
   spec.homepage      = ""
   spec.license       = "MIT"
 
