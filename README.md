@@ -29,11 +29,13 @@ Ghost Dog is built around the simple type `Responder`, which implements `matches
 to determine whether a `Responder` can be used for a missing method (and therefore used in both `respond_to?`
 and `method_missing`) and `call` is used to actually respond to a method invocation.  Most of the time you shouldn't
 be dealing directly with the `Responder` class; instead, you'll define methods either via the shorthand or with
-the DSL.  In order to define
- a `ghost_method`, you need to implement a Matcher, which can either be a simple regex with capture groups or a
- proc.  When using a regex, any capture groups will be passed to your responding block.  When using a proc, anything
- returned by the proc will be passed to your responding block.  The matcher block should return something truthy
- if the method is available, otherwise it should return something falsy.  See below for additional examples:
+the DSL.
+
+In order to define a `ghost_method`, you need to implement a Matcher, which can either be a simple regex with 
+capture groups or a proc. When using a regex, any capture groups will be passed to your responding block. When using 
+a proc, anything returned by the proc will be passed to your responding block.  The matcher block should return 
+something truthy if the method is available, otherwise it should return something falsy.  See below for additional 
+examples.
 
 ## Usage
 
