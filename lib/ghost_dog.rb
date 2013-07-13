@@ -47,17 +47,6 @@ module GhostDog
         super
       end
     end
-
-    def inherited(child)
-      _setup_ghost_dog_singleton_class_inheritance(child)
-      super
-    end
-
-    def _setup_ghost_dog_singleton_class_inheritance(child)
-      if singleton_class.respond_to?(:_setup_ghost_dog_inheritance, :include_private)
-        singleton_class.send(:_setup_ghost_dog_inheritance, child.singleton_class)
-      end
-    end
   end
 
   module ClassMethods
@@ -70,16 +59,13 @@ module GhostDog
     private
 
     def _ghost_method_definitions
-      @_ghost_methods ||= []
-    end
-
-    def inherited(child)
-      _setup_ghost_dog_inheritance(child)
-      super
-    end
-
-    def _setup_ghost_dog_inheritance(child)
-      child.instance_variable_set('@_ghost_methods', _ghost_method_definitions)
+      @_ghost_methods ||= [].tap do |defs|
+        ancestor = superclass
+        while ancestor.respond_to?(:_ghost_method_definitions, :include_private)
+          defs.concat(ancestor.send(:_ghost_method_definitions).dup)
+          ancestor = ancestor.superclass
+        end
+      end
     end
   end
 end
