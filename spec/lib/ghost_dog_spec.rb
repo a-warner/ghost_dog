@@ -27,6 +27,39 @@ describe GhostDog do
     end
   end
 
+  context 'module responder' do
+    module MinimalModule
+      include GhostDog
+
+      ghost_method /^tell_me_(.+)$/ do |what_to_tell|
+        what_to_tell.gsub('_', ' ')
+      end
+    end
+
+    class MinimalImpl
+      include MinimalModule
+    end
+
+    let(:obj) { MinimalImpl.new }
+    subject { obj }
+    its(:tell_me_hello_world) { should == "hello world" }
+
+    context 'singleton module' do
+      module SingletonModule
+        class << self
+          include GhostDog
+
+          ghost_method /^hello_(.+)$/ do |name|
+            name.gsub('_', ' ')
+          end
+        end
+      end
+
+      subject { SingletonModule }
+      its(:hello_andrew_my_friend) { should == "andrew my friend" }
+    end
+  end
+
   context 'class level responder' do
     class ClassLevel
       class << self

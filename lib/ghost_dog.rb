@@ -20,8 +20,10 @@ module GhostDog
     end
 
     def _klass_where_ghost_method_definitions_are
-      if self.class == Class
-        self.singleton_class
+      if self.class.is_a?(Class)
+        singleton_class.extend(ClassMethods) unless singleton_class.is_a?(ClassMethods)
+
+        singleton_class
       else
         self.class
       end
@@ -60,10 +62,12 @@ module GhostDog
 
     def _ghost_method_definitions
       @_ghost_methods ||= [].tap do |defs|
-        ancestor = superclass
-        while ancestor.respond_to?(:_ghost_method_definitions, :include_private)
-          defs.concat(ancestor.send(:_ghost_method_definitions).dup)
-          ancestor = ancestor.superclass
+        klasses_that_might_have_ghost_methods = []
+        klasses_that_might_have_ghost_methods << superclass if defined?(superclass)
+        klasses_that_might_have_ghost_methods.concat(included_modules)
+
+        klasses_that_might_have_ghost_methods.select { |k| k.respond_to?(:_ghost_method_definitions, :include_private) }.each do |k|
+          defs.concat(k.send(:_ghost_method_definitions).dup)
         end
       end
     end
