@@ -20,7 +20,7 @@ Or install it yourself as:
 
 ## Motivation
 
-I've written similar looking `method_missing` and `repond_to?` code frequently enough
+I've written similar looking `method_missing` and `respond_to?` code frequently enough
 that I finally decided it was time for an abstraction.  This might not be the best
 abstraction, but it was the simplest way of thinking about it for me.  Feel free to fork
 the project and add your own interfaces for it.
